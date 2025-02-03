@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products List</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma/css/bulma.min.css">
+  <style>
+    body {
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <input v-model="searchQuery" type="text" placeholder="Search..." class="input mb-3" />
+    <button @click="filterProducts" class="button is-primary">Search</button>
+    <div id="products-container" v-if="filteredProducts.length" class="columns is-multiline mt-4">
+      <div v-for="product in filteredProducts" :key="product.id" class="column is-one-quarter">
+        <div class="card">
+          <div class="card-image">
+            <figure class="image is-4by3">
+              <img :src="product.images[0]" alt="Product Image" />
+            </figure>
+          </div>
+          <div class="card-content">
+            <p class="title is-5">
+              <a :href="`/details.html?id=${product.id}`">{{ product.title }}</a>
+            </p>
+            <p class="subtitle is-6">${{ product.price }}</p>
+            <span class="tag is-success">{{ product.availabilityStatus }}</span>
+            <button class="button is-primary is-fullwidth mt-3">Add to Cart</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p v-else>No products found.</p>
+  </div>
+  
+  <script>
+    const app = Vue.createApp({
+      data() {
+        return {
+          searchQuery: "",
+          products: [],
+          filteredProducts: []
+        };
+      },
+      methods: {
+        fetchProducts() {
+          fetch('https://dummyjson.com/products?limit=16&skip=16')
+            .then(res => res.json())
+            .then(data => {
+              this.products = data.products;
+              this.filteredProducts = this.products;
+            })
+            .catch(error => console.error("Error fetching products:", error));
+        },
+        filterProducts() {
+          this.filteredProducts = this.products.filter(product =>
+            product.title.toLowerCase().includes(this.searchQuery.toLowerCase())
+          );
+        }
+      },
+      created() {
+        this.fetchProducts();
+      }
+    });
+    app.mount('#app');
+  </script>
+</body>
+</html>
