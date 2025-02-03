@@ -13,7 +13,6 @@
   </style>
 </head>
 <body>
-    <!-- Hero Section -->
     <section class="hero is-primary">
         <div class="hero-body">
             <div class="container">
@@ -22,9 +21,22 @@
             </div>
         </div>
     </section>
+    <section class="section">
         <div id="app">
-          <input v-model="searchQuery" type="text" placeholder="Search..." class="input mb-3" />
-          <button @click="filterProducts" class="button is-primary">Search</button>
+          <div class="field has-addons">
+            <div class="control">
+              <input v-model="searchQuery" type="text" placeholder="Search..." class="input" />
+            </div>
+            <div class="control">
+              <button @click="filterProducts" class="button is-primary">Search</button>
+            </div>
+          </div>
+          <div class="select mt-3">
+            <select v-model="selectedCategory" @change="filterProducts">
+              <option value="">All Categories</option>
+              <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
+            </select>
+          </div>
           <div id="products-container" v-if="filteredProducts.length" class="columns is-multiline mt-4">
             <div v-for="product in filteredProducts" :key="product.id" class="column is-one-quarter">
               <div class="card">
@@ -53,24 +65,30 @@
       data() {
         return {
           searchQuery: "",
+          selectedCategory: "",
           products: [],
-          filteredProducts: []
+          filteredProducts: [],
+          categories: []
         };
       },
       methods: {
         fetchProducts() {
-          fetch('https://dummyjson.com/products?limit=16&skip=16')
+          fetch('https://dummyjson.com/products?limit=24&skip=10')
             .then(res => res.json())
             .then(data => {
               this.products = data.products;
               this.filteredProducts = this.products;
+              this.categories = [...new Set(this.products.map(product => product.category))];
             })
             .catch(error => console.error("Error fetching products:", error));
         },
         filterProducts() {
-          this.filteredProducts = this.products.filter(product =>
-            product.title.toLowerCase().includes(this.searchQuery.toLowerCase())
-          );
+          this.filteredProducts = this.products.filter(product => {
+            return (
+              product.title.toLowerCase().includes(this.searchQuery.toLowerCase()) &&
+              (this.selectedCategory === "" || product.category === this.selectedCategory)
+            );
+          });
         }
       },
       created() {
